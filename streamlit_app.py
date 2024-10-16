@@ -4,17 +4,18 @@ import json
 import datetime
 import threading
 
-# Authentication data
-username_password = {'admin': 'password123'}
+# Authentication data from Streamlit secrets
+APP_USERNAME = st.secrets["APP_USERNAME"]
+APP_PASSWORD = st.secrets["APP_PASSWORD"]
 
 # Authentication function
 def authenticate(username, password):
-    return username in username_password and username_password[username] == password
+    return username == APP_USERNAME and password == APP_PASSWORD
 
 # Function to run the data extraction script
 def run_extraction_script():
     try:
-        os.system('python "C:\\Users\\Rolando Pancho\\Documents\\EXTRACTEXCELFILEFINAL.py"')
+        threading.Thread(target=lambda: run(sync_playwright(), browser_type="edge")).start()
         last_extraction_date = datetime.datetime.now().date()
         with open('last_extraction.json', 'w') as f:
             json.dump({'last_extraction': last_extraction_date.strftime('%Y-%m-%d')}, f)
@@ -61,7 +62,7 @@ def main():
 
     # Extract Data button
     if st.button("Extract Data"):
-        threading.Thread(target=run_extraction_script).start()
+        run_extraction_script()
 
     # Logout button
     if st.sidebar.button("Logout"):
