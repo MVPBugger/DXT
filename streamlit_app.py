@@ -23,8 +23,7 @@ def run_extraction_script():
     try:
         
         def extraction_thread():
-            
-            EXTRACTEXCELFILEFINAL.start_extraction()
+            start_extraction()
 
         threading.Thread(target=extraction_thread).start()
 
