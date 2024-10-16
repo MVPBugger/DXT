@@ -84,102 +84,112 @@ def run(playwright: Playwright, browser_type: str) -> None:
     custom_download_folder = os.path.join(default_download_path, "greenprofi_downloads")
     os.makedirs(custom_download_folder, exist_ok=True)
 
-    # Launch the browser
-    if browser_type == "chrome":
-        browser = playwright.chromium.launch(headless=True) 
-    elif browser_type == "edge":
-        browser = playwright.chromium.launch(headless=True, channel="msedge")  
-    else:
-        raise ValueError("Unsupported browser type. Use 'chrome' or 'edge'.")
-    
-    # Create a new browser context
-    context = browser.new_context(
-        accept_downloads=True,
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    )                              
-    
-    # Create a new page
-    page = context.new_page()
-    
-    # Navigate to GreenProfi website and download the file
-    page.goto("https://my.greenprofi.de/cockpit")
-    page.wait_for_load_state("networkidle")
-    
-    # Accept cookies
-    page.get_by_role("button", name="Nur Session-Cookies freigeben").click()
-    page.wait_for_load_state("networkidle")
+    try:
+        # Launch the browser
+        logging.info("Attempting to launch Playwright browser...")
+        if browser_type == "chrome":
+            browser = playwright.chromium.launch(headless=True) 
+        elif browser_type == "edge":
+            browser = playwright.chromium.launch(headless=True, channel="msedge")  
+        else:
+            raise ValueError("Unsupported browser type. Use 'chrome' or 'edge'.")
+        logging.info("Browser launched successfully.")
 
-    # Log in to GreenProfi
-    page.get_by_role("textbox", name="E-Mail").fill(GREENPROFI_EMAIL)
-    page.get_by_role("textbox", name="Passwort").fill(GREENPROFI_PASSWORD)
-    page.locator("[id=\"__BVID__81___BV_modal_body_\"]").get_by_role("button", name="Einloggen").click()
-    page.wait_for_load_state("load")
-    
-    last_project_id = get_last_downloaded_project()
+        # Create a new browser context
+        context = browser.new_context(
+            accept_downloads=True,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        )
 
-    # Navigate to Submissionsergebnisse and download the Excel file
-    page.get_by_text("Submissionsergebnisse", exact=True).click()
-    page.wait_for_load_state("load")
-    
-    page.get_by_role("button", name="Ergebnisse pro Seite:").click()
-    page.get_by_role("menuitem", name="100").click()
-    page.wait_for_load_state("load")
-    
-    page.locator("span:nth-child(5) > a").first.click()
-    
-    page.get_by_text("Leistungsumfang", exact=True).click()
-    page.get_by_text("Baubeginn/Ende").click()
-    page.locator("label").filter(has_text="100").click()
-    
-    with page.expect_download() as download_info:
-        page.evaluate("""
-            () => {
-                const exportLink = Array.from(document.querySelectorAll('a')).find(el => el.textContent.trim() === 'Exportieren');
-                if (exportLink) {
-                    exportLink.click();
-                } else {
-                    throw new Error('Export link not found');
-                }
-            }
-        """)
-   
-    download = download_info.value
-    final_path = os.path.join(custom_download_folder, download.suggested_filename)
+        # Create a new page
+        page = context.new_page()
 
-    # Check if file exists before attempting upload
-    if not os.path.exists(final_path):
-        logging.error(f"Error: File not found at {final_path}")
-    else:
-        download.save_as(final_path)
-
-        # Save last downloaded project
-        save_last_downloaded_project(download.suggested_filename)
-
-        # Upload the file to SharePoint
-        page.goto(SHAREPOINT_SITE_URL)
+        # Navigate to GreenProfi website and download the file
+        page.goto("https://my.greenprofi.de/cockpit")
         page.wait_for_load_state("networkidle")
 
-        # Log in to SharePoint
-        page.fill('input[type="email"]', USERNAME)
-        page.click('input[type="submit"]')
-        page.fill('input[type="password"]', PASSWORD)
-        page.click('input[type="submit"]')
-        time.sleep(5)  # Adjust as needed for login process
-        try:
-            page.click('input[value="Yes"]')  # Stay signed in prompt
-        except:
-            pass
+        # Accept cookies
+        page.get_by_role("button", name="Nur Session-Cookies freigeben").click()
+        page.wait_for_load_state("networkidle")
 
-        # Uploading file to SharePoint
-        if upload_to_sharepoint(page, final_path):
-            save_last_extraction_date(datetime.datetime.now().date())
+        # Log in to GreenProfi
+        page.get_by_role("textbox", name="E-Mail").fill(GREENPROFI_EMAIL)
+        page.get_by_role("textbox", name="Passwort").fill(GREENPROFI_PASSWORD)
+        page.locator("[id=\"__BVID__81___BV_modal_body_\"]").get_by_role("button", name="Einloggen").click()
+        page.wait_for_load_state("load")
+
+        last_project_id = get_last_downloaded_project()
+
+        # Navigate to Submissionsergebnisse and download the Excel file
+        page.get_by_text("Submissionsergebnisse", exact=True).click()
+        page.wait_for_load_state("load")
+
+        page.get_by_role("button", name="Ergebnisse pro Seite:").click()
+        page.get_by_role("menuitem", name="100").click()
+        page.wait_for_load_state("load")
+
+        page.locator("span:nth-child(5) > a").first.click()
+
+        page.get_by_text("Leistungsumfang", exact=True).click()
+        page.get_by_text("Baubeginn/Ende").click()
+        page.locator("label").filter(has_text="100").click()
+
+        with page.expect_download() as download_info:
+            page.evaluate("""
+                () => {
+                    const exportLink = Array.from(document.querySelectorAll('a')).find(el => el.textContent.trim() === 'Exportieren');
+                    if (exportLink) {
+                        exportLink.click();
+                    } else {
+                        throw new Error('Export link not found');
+                    }
+                }
+            """)
+
+        download = download_info.value
+        final_path = os.path.join(custom_download_folder, download.suggested_filename)
+
+        # Check if file exists before attempting upload
+        if not os.path.exists(final_path):
+            logging.error(f"Error: File not found at {final_path}")
         else:
-            logging.warning("Failed to upload to SharePoint. Last extraction date not updated.")
+            download.save_as(final_path)
 
-    # Close the browser
-    context.close()
-    browser.close()
-    logging.info("Script execution finished.")
+            # Save last downloaded project
+            save_last_downloaded_project(download.suggested_filename)
+
+            # Upload the file to SharePoint
+            page.goto(SHAREPOINT_SITE_URL)
+            page.wait_for_load_state("networkidle")
+
+            # Log in to SharePoint
+            page.fill('input[type="email"]', USERNAME)
+            page.click('input[type="submit"]')
+            page.fill('input[type="password"]', PASSWORD)
+            page.click('input[type="submit"]')
+            time.sleep(5)  # Adjust as needed for login process
+            try:
+                page.click('input[value="Yes"]')  # Stay signed in prompt
+            except:
+                pass
+
+            # Uploading file to SharePoint
+            if upload_to_sharepoint(page, final_path):
+                save_last_extraction_date(datetime.datetime.now().date())
+            else:
+                logging.warning("Failed to upload to SharePoint. Last extraction date not updated.")
+
+    except Exception as e:
+        logging.error(f"An error occurred during script execution: {e}")
+
+    finally:
+        # Close the browser
+        try:
+            context.close()
+            browser.close()
+        except Exception as e:
+            logging.warning(f"Failed to close browser properly: {e}")
+        logging.info("Script execution finished.")
 
 with sync_playwright() as playwright:
     run(playwright, browser_type="edge")
