@@ -191,5 +191,7 @@ def run(playwright: Playwright, browser_type: str) -> None:
             logging.warning(f"Failed to close browser properly: {e}")
         logging.info("Script execution finished.")
 
-with sync_playwright() as playwright:
-    run(playwright, browser_type="edge")
+  
+def start_extraction():
+    with sync_playwright() as playwright:
+        run(playwright, browser_type="edge")
