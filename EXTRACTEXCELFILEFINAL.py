@@ -182,4 +182,4 @@ def run(playwright: Playwright, browser_type: str) -> None:
     logging.info("Script execution finished.")
 
 with sync_playwright() as playwright:
-    run(playwright, browser_type="edge")
+    run(playwright, browser_type="chrome")
