@@ -88,7 +88,7 @@ def run(playwright: Playwright, browser_type: str) -> None:
     if browser_type == "chrome":
         browser = playwright.chromium.launch(headless=True) 
     elif browser_type == "edge":
-        browser = playwright.chromium.launch(headless=False, channel="msedge")  
+        browser = playwright.chromium.launch(headless=True, channel="msedge")  
     else:
         raise ValueError("Unsupported browser type. Use 'chrome' or 'edge'.")
     
@@ -182,4 +182,4 @@ def run(playwright: Playwright, browser_type: str) -> None:
     logging.info("Script execution finished.")
 
 with sync_playwright() as playwright:
-    run(playwright, browser_type="chrome")
+    run(playwright, browser_type="edge")
