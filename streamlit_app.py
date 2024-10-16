@@ -24,7 +24,7 @@ def run_extraction_script():
         # Run the extraction in a separate thread to avoid blocking the UI
         def extraction_thread():
             # Replace 'start_extraction' with the correct function name
-            EXTRACTEXCELFILEFINAL.run()
+            EXTRACTEXCELFILEFINAL.start_extraction()
 
         threading.Thread(target=extraction_thread).start()
 
