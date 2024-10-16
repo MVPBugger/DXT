@@ -86,7 +86,7 @@ def run(playwright: Playwright, browser_type: str) -> None:
 
     # Launch the browser
     if browser_type == "chrome":
-        browser = playwright.chromium.launch(headless=False) 
+        browser = playwright.chromium.launch(headless=True) 
     elif browser_type == "edge":
         browser = playwright.chromium.launch(headless=False, channel="msedge")  
     else:
