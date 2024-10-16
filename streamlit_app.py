@@ -21,11 +21,10 @@ def authenticate(username, password):
 # Function to run the data extraction script
 def run_extraction_script():
     try:
-      
-
         # Run the extraction in a separate thread to avoid blocking the UI
         def extraction_thread():
-            EXTRACTEXCELFILEFINAL.start_extraction()
+            # Replace 'start_extraction' with the correct function name
+            EXTRACTEXCELFILEFINAL.run()
 
         threading.Thread(target=extraction_thread).start()
 
@@ -38,6 +37,7 @@ def run_extraction_script():
         update_last_extraction_info()
     except Exception as e:
         st.error(f"Error: {e}")
+
 
 # Update the last extraction info
 def update_last_extraction_info():
