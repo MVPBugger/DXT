@@ -11,12 +11,12 @@ logging.basicConfig(filename='greenprofi_extraction.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Load secrets from Streamlit
-SHAREPOINT_SITE_URL = "SHAREPOINT_SITE_URL"
-SHAREPOINT_FOLDER_URL = "SHAREPOINT_FOLDER_URL"
-USERNAME = "USERNAME"
-PASSWORD = "PASSWORD"
-GREENPROFI_EMAIL = "GREENPROFI_EMAIL"
-GREENPROFI_PASSWORD = "GREENPROFI_PASSWORD"
+SHAREPOINT_SITE_URL = st.secrets["SHAREPOINT_SITE_URL"]
+SHAREPOINT_FOLDER_URL = st.secrets["SHAREPOINT_FOLDER_URL"]
+USERNAME = st.secrets["USERNAME"]
+PASSWORD = st.secrets["PASSWORD"]
+GREENPROFI_EMAIL = st.secrets["GREENPROFI_EMAIL"]
+GREENPROFI_PASSWORD = st.secrets["GREENPROFI_PASSWORD"]
 
 def get_last_extraction_date():
     # Get the last extraction date from the JSON file
