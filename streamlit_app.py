@@ -3,6 +3,12 @@ import streamlit as st
 import json
 import datetime
 import threading
+import logging
+import EXTRACTEXCELFILEFINAL  # Import the extraction script
+
+# Set up logging
+logging.basicConfig(filename='streamlit_app.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Authentication data from Streamlit secrets
 APP_USERNAME = st.secrets["APP_USERNAME"]
@@ -15,11 +21,21 @@ def authenticate(username, password):
 # Function to run the data extraction script
 def run_extraction_script():
     try:
-        threading.Thread(target=lambda: run(sync_playwright(), browser_type="edge")).start()
+        # Pass secrets to EXTRACTEXCELFILEFINAL
+        EXTRACTEXCELFILEFINAL.set_secrets(st.secrets)
+
+        # Run the extraction in a separate thread to avoid blocking the UI
+        def extraction_thread():
+            EXTRACTEXCELFILEFINAL.start_extraction()
+
+        threading.Thread(target=extraction_thread).start()
+
+        # Update the last extraction info
         last_extraction_date = datetime.datetime.now().date()
         with open('last_extraction.json', 'w') as f:
             json.dump({'last_extraction': last_extraction_date.strftime('%Y-%m-%d')}, f)
-        st.success("Data extraction completed, check SharePoint.")
+
+        st.success("Data extraction started. Please check the log file for progress.")
         update_last_extraction_info()
     except Exception as e:
         st.error(f"Error: {e}")
@@ -51,7 +67,6 @@ def main():
             if authenticate(username, password):
                 st.session_state.authenticated = True
                 st.sidebar.success("Login successful!")
-                # No need for experimental_rerun here, since setting session_state will auto-refresh
             else:
                 st.sidebar.error("Invalid username or password")
         st.warning("Please log in using the sidebar.")
@@ -67,7 +82,6 @@ def main():
     # Logout button
     if st.sidebar.button("Logout"):
         st.session_state.authenticated = False
-        # No need for experimental_rerun here either, Streamlit will handle the reactivity
 
 if __name__ == "__main__":
     main()
