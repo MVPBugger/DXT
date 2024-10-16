@@ -21,8 +21,7 @@ def authenticate(username, password):
 # Function to run the data extraction script
 def run_extraction_script():
     try:
-        # Pass secrets to EXTRACTEXCELFILEFINAL
-        EXTRACTEXCELFILEFINAL.set_secrets(st.secrets)
+      
 
         # Run the extraction in a separate thread to avoid blocking the UI
         def extraction_thread():
