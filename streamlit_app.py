@@ -51,7 +51,7 @@ def main():
             if authenticate(username, password):
                 st.session_state.authenticated = True
                 st.sidebar.success("Login successful!")
-                st.experimental_rerun()
+                # No need for experimental_rerun here, since setting session_state will auto-refresh
             else:
                 st.sidebar.error("Invalid username or password")
         st.warning("Please log in using the sidebar.")
@@ -67,7 +67,7 @@ def main():
     # Logout button
     if st.sidebar.button("Logout"):
         st.session_state.authenticated = False
-        st.experimental_rerun()
+        # No need for experimental_rerun here either, Streamlit will handle the reactivity
 
 if __name__ == "__main__":
     main()
